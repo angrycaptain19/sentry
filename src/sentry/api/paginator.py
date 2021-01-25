@@ -110,11 +110,7 @@ class BasePaginator(object):
 
         limit = min(limit, self.max_limit)
 
-        if cursor.value:
-            cursor_value = self.value_from_cursor(cursor)
-        else:
-            cursor_value = 0
-
+        cursor_value = self.value_from_cursor(cursor) if cursor.value else 0
         queryset = self._build_queryset(cursor_value, cursor.is_prev)
 
         # TODO(dcramer): this does not yet work correctly for ``is_prev`` when
@@ -315,10 +311,7 @@ class MergingOffsetPaginator(OffsetPaginator):
 
         queryset = self.apply_to_queryset(self.queryset, primary_results)
 
-        mapping = {}
-        for model in queryset:
-            mapping[self.key_from_model(model)] = model
-
+        mapping = {self.key_from_model(model): model for model in queryset}
         results = []
         for row in primary_results:
             model = mapping.get(self.key_from_data(row))
@@ -403,16 +396,18 @@ class SequencePaginator(object):
         if self.scores:
             prev_score = self.scores[min(lo, len(self.scores) - 1)]
             prev_cursor = Cursor(
-                prev_score, lo - self.search(prev_score, hi=lo), True, True if lo > 0 else False
+                prev_score, lo - self.search(prev_score, hi=lo), True, lo > 0
             )
+
 
             next_score = self.scores[min(hi, len(self.scores) - 1)]
             next_cursor = Cursor(
                 next_score,
                 hi - self.search(next_score, hi=hi),
                 False,
-                True if hi < len(self.scores) else False,
+                hi < len(self.scores),
             )
+
         else:
             prev_cursor = Cursor(cursor.value, cursor.offset, True, False)
             next_cursor = Cursor(cursor.value, cursor.offset, False, False)
@@ -560,24 +555,22 @@ class CombinedQuerysetPaginator(object):
             return int(
                 self.multiplier * float(getattr(item, self.key_from_item(item)).strftime("%s.%f"))
             )
-        else:
-            value = getattr(item, self.key_from_item(item))
-            value_type = type(value)
-            if value_type is float:
-                return math.floor(value) if self._is_asc(for_prev) else math.ceil(value)
-            return value
+        value = getattr(item, self.key_from_item(item))
+        value_type = type(value)
+        if value_type is float:
+            return math.floor(value) if self._is_asc(for_prev) else math.ceil(value)
+        return value
 
     def value_from_cursor(self, cursor):
         if self.using_dates:
             return datetime.fromtimestamp(float(cursor.value) / self.multiplier).replace(
                 tzinfo=timezone.utc
             )
-        else:
-            value = cursor.value
-            value_type = type(value)
-            if value_type is float:
-                return math.floor(value) if self._is_asc(cursor.is_prev) else math.ceil(value)
-            return value
+        value = cursor.value
+        value_type = type(value)
+        if value_type is float:
+            return math.floor(value) if self._is_asc(cursor.is_prev) else math.ceil(value)
+        return value
 
     def _is_asc(self, is_prev):
         return (self.desc and is_prev) or not (self.desc or is_prev)
@@ -616,11 +609,7 @@ class CombinedQuerysetPaginator(object):
         if cursor is None:
             cursor = Cursor(0, 0, 0)
 
-        if cursor.value:
-            cursor_value = self.value_from_cursor(cursor)
-        else:
-            cursor_value = None
-
+        cursor_value = self.value_from_cursor(cursor) if cursor.value else None
         limit = min(limit, MAX_LIMIT)
 
         offset = cursor.offset

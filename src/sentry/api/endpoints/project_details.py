@@ -382,9 +382,10 @@ class ProjectDetailsEndpoint(ProjectEndpoint):
             project.update_option("digests:mail:minimum_delay", result["digestsMinDelay"])
         if result.get("digestsMaxDelay"):
             project.update_option("digests:mail:maximum_delay", result["digestsMaxDelay"])
-        if result.get("subjectPrefix") is not None:
-            if project.update_option("mail:subject_prefix", result["subjectPrefix"]):
-                changed_proj_settings["mail:subject_prefix"] = result["subjectPrefix"]
+        if result.get("subjectPrefix") is not None and project.update_option(
+            "mail:subject_prefix", result["subjectPrefix"]
+        ):
+            changed_proj_settings["mail:subject_prefix"] = result["subjectPrefix"]
         if result.get("subjectTemplate"):
             project.update_option("mail:subject_template", result["subjectTemplate"])
         if result.get("scrubIPAddresses") is not None:
@@ -400,56 +401,66 @@ class ProjectDetailsEndpoint(ProjectEndpoint):
                 changed_proj_settings["sentry:grouping_enhancements"] = result[
                     "groupingEnhancements"
                 ]
-        if result.get("groupingEnhancementsBase") is not None:
-            if project.update_option(
-                "sentry:grouping_enhancements_base", result["groupingEnhancementsBase"]
-            ):
-                changed_proj_settings["sentry:grouping_enhancements_base"] = result[
-                    "groupingEnhancementsBase"
-                ]
-        if result.get("fingerprintingRules") is not None:
-            if project.update_option("sentry:fingerprinting_rules", result["fingerprintingRules"]):
-                changed_proj_settings["sentry:fingerprinting_rules"] = result["fingerprintingRules"]
-        if result.get("securityToken") is not None:
-            if project.update_option("sentry:token", result["securityToken"]):
-                changed_proj_settings["sentry:token"] = result["securityToken"]
+        if result.get(
+            "groupingEnhancementsBase"
+        ) is not None and project.update_option(
+            "sentry:grouping_enhancements_base", result["groupingEnhancementsBase"]
+        ):
+            changed_proj_settings["sentry:grouping_enhancements_base"] = result[
+                "groupingEnhancementsBase"
+            ]
+        if result.get("fingerprintingRules") is not None and project.update_option(
+            "sentry:fingerprinting_rules", result["fingerprintingRules"]
+        ):
+            changed_proj_settings["sentry:fingerprinting_rules"] = result["fingerprintingRules"]
+        if result.get("securityToken") is not None and project.update_option(
+            "sentry:token", result["securityToken"]
+        ):
+            changed_proj_settings["sentry:token"] = result["securityToken"]
         if result.get("securityTokenHeader") is not None:
             if project.update_option("sentry:token_header", result["securityTokenHeader"]):
                 changed_proj_settings["sentry:token_header"] = result["securityTokenHeader"]
-        if result.get("verifySSL") is not None:
-            if project.update_option("sentry:verify_ssl", result["verifySSL"]):
-                changed_proj_settings["sentry:verify_ssl"] = result["verifySSL"]
-        if result.get("dataScrubber") is not None:
-            if project.update_option("sentry:scrub_data", result["dataScrubber"]):
-                changed_proj_settings["sentry:scrub_data"] = result["dataScrubber"]
+        if result.get("verifySSL") is not None and project.update_option(
+            "sentry:verify_ssl", result["verifySSL"]
+        ):
+            changed_proj_settings["sentry:verify_ssl"] = result["verifySSL"]
+        if result.get("dataScrubber") is not None and project.update_option(
+            "sentry:scrub_data", result["dataScrubber"]
+        ):
+            changed_proj_settings["sentry:scrub_data"] = result["dataScrubber"]
         if result.get("dataScrubberDefaults") is not None:
             if project.update_option("sentry:scrub_defaults", result["dataScrubberDefaults"]):
                 changed_proj_settings["sentry:scrub_defaults"] = result["dataScrubberDefaults"]
         if result.get("sensitiveFields") is not None:
             if project.update_option("sentry:sensitive_fields", result["sensitiveFields"]):
                 changed_proj_settings["sentry:sensitive_fields"] = result["sensitiveFields"]
-        if result.get("safeFields") is not None:
-            if project.update_option("sentry:safe_fields", result["safeFields"]):
-                changed_proj_settings["sentry:safe_fields"] = result["safeFields"]
-        if "storeCrashReports" in result is not None:
-            if project.get_option("sentry:store_crash_reports") != result["storeCrashReports"]:
-                changed_proj_settings["sentry:store_crash_reports"] = result["storeCrashReports"]
-                if result["storeCrashReports"] is None:
-                    project.delete_option("sentry:store_crash_reports")
-                else:
-                    project.update_option("sentry:store_crash_reports", result["storeCrashReports"])
+        if result.get("safeFields") is not None and project.update_option(
+            "sentry:safe_fields", result["safeFields"]
+        ):
+            changed_proj_settings["sentry:safe_fields"] = result["safeFields"]
+        if (
+            "storeCrashReports" in result is not None
+            and project.get_option("sentry:store_crash_reports")
+            != result["storeCrashReports"]
+        ):
+            changed_proj_settings["sentry:store_crash_reports"] = result["storeCrashReports"]
+            if result["storeCrashReports"] is None:
+                project.delete_option("sentry:store_crash_reports")
+            else:
+                project.update_option("sentry:store_crash_reports", result["storeCrashReports"])
         if result.get("relayPiiConfig") is not None:
             if project.update_option("sentry:relay_pii_config", result["relayPiiConfig"]):
                 changed_proj_settings["sentry:relay_pii_config"] = (
                     result["relayPiiConfig"].strip() or None
                 )
-        if result.get("builtinSymbolSources") is not None:
-            if project.update_option(
-                "sentry:builtin_symbol_sources", result["builtinSymbolSources"]
-            ):
-                changed_proj_settings["sentry:builtin_symbol_sources"] = result[
-                    "builtinSymbolSources"
-                ]
+        if result.get(
+            "builtinSymbolSources"
+        ) is not None and project.update_option(
+            "sentry:builtin_symbol_sources", result["builtinSymbolSources"]
+        ):
+            changed_proj_settings["sentry:builtin_symbol_sources"] = result[
+                "builtinSymbolSources"
+            ]
         if result.get("symbolSources") is not None:
             if project.update_option("sentry:symbol_sources", result["symbolSources"]):
                 changed_proj_settings["sentry:symbol_sources"] = result["symbolSources"] or None
@@ -459,15 +470,15 @@ class ProjectDetailsEndpoint(ProjectEndpoint):
             else:
                 project.update_option("sentry:default_environment", result["defaultEnvironment"])
         # resolveAge can be None
-        if "resolveAge" in result:
-            if project.update_option(
-                "sentry:resolve_age",
-                0 if result.get("resolveAge") is None else int(result["resolveAge"]),
-            ):
-                changed_proj_settings["sentry:resolve_age"] = result["resolveAge"]
-        if result.get("scrapeJavaScript") is not None:
-            if project.update_option("sentry:scrape_javascript", result["scrapeJavaScript"]):
-                changed_proj_settings["sentry:scrape_javascript"] = result["scrapeJavaScript"]
+        if "resolveAge" in result and project.update_option(
+            "sentry:resolve_age",
+            0 if result.get("resolveAge") is None else int(result["resolveAge"]),
+        ):
+            changed_proj_settings["sentry:resolve_age"] = result["resolveAge"]
+        if result.get("scrapeJavaScript") is not None and project.update_option(
+            "sentry:scrape_javascript", result["scrapeJavaScript"]
+        ):
+            changed_proj_settings["sentry:scrape_javascript"] = result["scrapeJavaScript"]
         if result.get("allowedDomains"):
             if project.update_option("sentry:origins", result["allowedDomains"]):
                 changed_proj_settings["sentry:origins"] = result["allowedDomains"]

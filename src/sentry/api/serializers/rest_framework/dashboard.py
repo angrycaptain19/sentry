@@ -195,17 +195,13 @@ class DashboardDetailsSerializer(CamelSnakeSerializer):
             interval=widget_data.get("interval", "5m"),
             order=order,
         )
-        new_queries = []
-        for i, query in enumerate(widget_data.pop("queries")):
-            new_queries.append(
-                DashboardWidgetQuery(
+        new_queries = [DashboardWidgetQuery(
                     widget=widget,
                     fields=query["fields"],
                     conditions=query["conditions"],
                     name=query.get("name", ""),
                     order=i,
-                )
-            )
+                ) for i, query in enumerate(widget_data.pop("queries"))]
         DashboardWidgetQuery.objects.bulk_create(new_queries)
 
     def update_widget(self, widget, data, order):

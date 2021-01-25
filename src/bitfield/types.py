@@ -116,10 +116,7 @@ class BitHandler(object):
 
     def __init__(self, value, keys, labels=None):
         # TODO: change to bitarray?
-        if value:
-            self._value = int(value)
-        else:
-            self._value = 0
+        self._value = int(value) if value else 0
         self._keys = keys
         self._labels = labels is not None and labels or keys
 

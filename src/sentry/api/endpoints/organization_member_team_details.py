@@ -79,10 +79,7 @@ class OrganizationMemberTeamDetailsEndpoint(OrganizationEndpoint):
         if request.user.id == member.user_id:
             return True
 
-        if self._can_admin_team(request, organization, team_slug):
-            return True
-
-        return False
+        return bool(self._can_admin_team(request, organization, team_slug))
 
     def _can_admin_team(self, request, organization, team_slug):
         global_roles = [r.id for r in roles.with_scope("org:write") if r.is_global]

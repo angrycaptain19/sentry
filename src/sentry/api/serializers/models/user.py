@@ -54,15 +54,12 @@ class UserSerializer(Serializer):
         emails = manytoone_to_dict(UserEmail.objects.filter(user__in=item_list), "user_id")
         authenticators = Authenticator.objects.bulk_users_have_2fa([i.id for i in item_list])
 
-        data = {}
-        for item in item_list:
-            data[item] = {
+        return {item: {
                 "avatar": avatars.get(item.id),
                 "identities": identities.get(item.id),
                 "has2fa": authenticators[item.id],
                 "emails": emails[item.id],
-            }
-        return data
+            } for item in item_list}
 
     def serialize(self, obj, attrs, user):
         experiment_assignments = experiments.all(user=user)

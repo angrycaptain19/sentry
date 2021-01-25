@@ -233,9 +233,9 @@ class OrganizationSerializer(serializers.Serializer):
                 "Organization does not have the relay feature enabled"
             )
 
-        # make sure we don't have multiple instances of one public key
-        public_keys = set()
         if value is not None:
+            # make sure we don't have multiple instances of one public key
+            public_keys = set()
             for key_info in value:
                 key = key_info.get("public_key")
                 if key in public_keys:

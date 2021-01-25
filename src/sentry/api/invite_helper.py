@@ -104,7 +104,7 @@ class ApiInviteHelper(object):
         member_joined.send_robust(
             member=self.om,
             organization=self.om.organization,
-            sender=self.instance if self.instance else self,
+            sender=self.instance or self,
         )
 
     def handle_member_already_exists(self):

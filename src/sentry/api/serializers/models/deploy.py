@@ -16,11 +16,10 @@ class DeploySerializer(Serializer):
             ).values_list("id", "name")
         }
 
-        result = {}
-        for item in item_list:
-            result[item] = {"environment": environments.get(item.environment_id)}
-
-        return result
+        return {
+            item: {"environment": environments.get(item.environment_id)}
+            for item in item_list
+        }
 
     def serialize(self, obj, attrs, user, **kwargs):
         return {

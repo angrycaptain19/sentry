@@ -63,8 +63,8 @@ class SentryAppDetailsEndpoint(SentryAppBaseEndpoint):
 
         # log any errors with schema
         if "schema" in serializer.errors:
+            name = "sentry_app.schema_validation_error"
             for error_message in serializer.errors["schema"]:
-                name = "sentry_app.schema_validation_error"
                 log_info = {
                     "schema": json.dumps(request.data["schema"]),
                     "user_id": request.user.id,

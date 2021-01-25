@@ -68,10 +68,12 @@ class BaseUserSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         attrs = super(BaseUserSerializer, self).validate(attrs)
 
-        if self.instance.email == self.instance.username:
-            if attrs.get("username", self.instance.email) != self.instance.email:
-                # ... this probably needs to handle newsletters and such?
-                attrs.setdefault("email", attrs["username"])
+        if (
+            self.instance.email == self.instance.username
+            and attrs.get("username", self.instance.email) != self.instance.email
+        ):
+            # ... this probably needs to handle newsletters and such?
+            attrs.setdefault("email", attrs["username"])
 
         return attrs
 
@@ -198,11 +200,12 @@ class UserDetailsEndpoint(UserEndpoint):
             status=OrganizationStatus.VISIBLE,
         )
 
-        org_results = []
-        for org in org_list:
-            org_results.append({"organization": org, "single_owner": org.has_single_owner()})
+        org_results = [
+            {"organization": org, "single_owner": org.has_single_owner()}
+            for org in org_list
+        ]
 
-        avail_org_slugs = set([o["organization"].slug for o in org_results])
+        avail_org_slugs = {o["organization"].slug for o in org_results}
         orgs_to_remove = set(serializer.validated_data.get("organizations")).intersection(
             avail_org_slugs
         )

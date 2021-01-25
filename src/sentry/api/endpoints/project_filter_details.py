@@ -39,7 +39,7 @@ class ProjectFilterDetailsEndpoint(ProjectEndpoint):
         if filter_id == "legacy-browsers":
             if isinstance(current_state, bool) or isinstance(new_state, bool):
                 returned_state = new_state
-                if not new_state:
+                if not returned_state:
                     audit_log_state = AuditLogEntryEvent.PROJECT_DISABLE
 
             elif current_state - new_state:

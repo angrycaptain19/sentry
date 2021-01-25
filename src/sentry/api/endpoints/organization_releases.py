@@ -80,13 +80,14 @@ def debounce_update_release_health_data(organization, project_ids):
     """This causes a flush of snuba health data to the postgres tables once
     per minute for the given projects.
     """
-    # Figure out which projects need to get updates from the snuba.
-    should_update = {}
     cache_keys = ["debounce-health:%d" % id for id in project_ids]
     cache_data = cache.get_many(cache_keys)
-    for project_id, cache_key in izip(project_ids, cache_keys):
-        if cache_data.get(cache_key) is None:
-            should_update[project_id] = cache_key
+    # Figure out which projects need to get updates from the snuba.
+    should_update = {
+        project_id: cache_key
+        for project_id, cache_key in izip(project_ids, cache_keys)
+        if cache_data.get(cache_key) is None
+    }
 
     if not should_update:
         return
@@ -106,11 +107,7 @@ def debounce_update_release_health_data(organization, project_ids):
             release__version__in=[x[1] for x in project_releases],
         ).values_list("project_id", "release__version")
     )
-    to_upsert = []
-    for key in project_releases:
-        if key not in existing:
-            to_upsert.append(key)
-
+    to_upsert = [key for key in project_releases if key not in existing]
     if to_upsert:
         dates = get_oldest_health_data_for_releases(to_upsert)
 
@@ -241,10 +238,12 @@ class OrganizationReleasesEndpoint(
                     limit=limit,
                 ),
                 apply_to_queryset=lambda queryset, rows: queryset.filter(
-                    projects__id__in=list(x[0] for x in rows), version__in=list(x[1] for x in rows)
+                    projects__id__in=[x[0] for x in rows],
+                    version__in=[x[1] for x in rows],
                 ),
                 key_from_model=lambda x: (x._for_project_id, x.version),
             )
+
         else:
             return Response({"detail": "invalid sort"}, status=400)
 

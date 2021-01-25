@@ -80,14 +80,12 @@ class OrganizationEventsEndpointBase(OrganizationEndpoint):
         except InvalidSearchQuery as e:
             raise ParseError(detail=six.text_type(e))
 
-        snuba_args = {
+        return {
             "start": _filter.start,
             "end": _filter.end,
             "conditions": _filter.conditions,
             "filter_keys": _filter.filter_keys,
         }
-
-        return snuba_args
 
     def quantize_date_params(self, request, params):
         # We only need to perform this rounding on relative date periods
@@ -191,21 +189,19 @@ class OrganizationEventsV2EndpointBase(OrganizationEventsEndpointBase):
         fields = request.GET.getlist("field")
         has_issues = "issue" in fields
         if has_issues:  # Look up the short ID and return that in the results
-            if has_issues:
-                issue_ids = set(row.get("issue.id") for row in results)
-                issues = Group.issues_mapping(issue_ids, project_ids, organization)
+            issue_ids = {row.get("issue.id") for row in results}
+            issues = Group.issues_mapping(issue_ids, project_ids, organization)
             for result in results:
-                if has_issues and "issue.id" in result:
+                if "issue.id" in result:
                     result["issue"] = issues.get(result["issue.id"], "unknown")
 
-        if not ("project.id" in first_row or "projectid" in first_row):
+        if "project.id" not in first_row and "projectid" not in first_row:
             return results
 
         for result in results:
             for key in ("projectid", "project.id"):
-                if key in result:
-                    if key not in fields:
-                        del result[key]
+                if key in result and key not in fields:
+                    del result[key]
 
         return results
 

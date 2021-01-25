@@ -470,12 +470,11 @@ class EventManager(object):
                     },
                 )
 
-        if not raw:
-            if not project.first_event:
-                project.update(first_event=job["event"].datetime)
-                first_event_received.send_robust(
-                    project=project, event=job["event"], sender=Project
-                )
+        if not raw and not project.first_event:
+            project.update(first_event=job["event"].datetime)
+            first_event_received.send_robust(
+                project=project, event=job["event"], sender=Project
+            )
 
         _eventstream_insert_many(jobs)
 
@@ -1393,7 +1392,10 @@ def _materialize_event_metrics(jobs):
 @metrics.wraps("event_manager.save_transaction_events")
 def save_transaction_events(jobs, projects):
     with metrics.timer("event_manager.save_transactions.collect_organization_ids"):
-        organization_ids = set(project.organization_id for project in six.itervalues(projects))
+        organization_ids = {
+            project.organization_id for project in six.itervalues(projects)
+        }
+
 
     with metrics.timer("event_manager.save_transactions.fetch_organizations"):
         organizations = {

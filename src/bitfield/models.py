@@ -22,8 +22,7 @@ class BitFieldFlags(object):
         return repr(self._flags)
 
     def __iter__(self):
-        for flag in self._flags:
-            yield flag
+        yield from self._flags
 
     def __getattr__(self, key):
         if key not in self._flags:
@@ -37,8 +36,7 @@ class BitFieldFlags(object):
             yield flag, Bit(self._flags.index(flag))
 
     def iterkeys(self):
-        for flag in self._flags:
-            yield flag
+        yield from self._flags
 
     def itervalues(self):
         for flag in self._flags:
@@ -119,8 +117,7 @@ class BitField(BigIntegerField):
         self.labels = labels
 
     def pre_save(self, instance, add):
-        value = getattr(instance, self.attname)
-        return value
+        return getattr(instance, self.attname)
 
     def get_prep_value(self, value):
         if value is None:

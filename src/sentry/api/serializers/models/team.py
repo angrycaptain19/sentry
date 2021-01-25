@@ -74,7 +74,7 @@ def get_access_requests(item_list, user):
 class TeamSerializer(Serializer):
     def get_attrs(self, item_list, user):
         request = env.request
-        org_ids = set([t.organization_id for t in item_list])
+        org_ids = {t.organization_id for t in item_list}
 
         org_roles = get_org_roles(org_ids, user)
 
@@ -90,13 +90,19 @@ class TeamSerializer(Serializer):
         for team in item_list:
             is_member = team.id in memberships
             org_role = org_roles.get(team.organization_id)
-            if is_member:
-                has_access = True
-            elif is_superuser:
-                has_access = True
-            elif team.organization.flags.allow_joinleave:
-                has_access = True
-            elif org_role and roles.get(org_role).is_global:
+            if (
+                is_member
+                or not is_member
+                and is_superuser
+                or not is_member
+                and not is_superuser
+                and team.organization.flags.allow_joinleave
+                or not is_member
+                and not is_superuser
+                and not team.organization.flags.allow_joinleave
+                and org_role
+                and roles.get(org_role).is_global
+            ):
                 has_access = True
             else:
                 has_access = False

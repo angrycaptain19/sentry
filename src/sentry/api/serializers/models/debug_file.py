@@ -9,7 +9,7 @@ from sentry.models import ProjectDebugFile
 @register(ProjectDebugFile)
 class DebugFileSerializer(Serializer):
     def serialize(self, obj, attrs, user):
-        d = {
+        return {
             "id": six.text_type(obj.id),
             "uuid": obj.debug_id[:36],
             "debugId": obj.debug_id,
@@ -23,4 +23,3 @@ class DebugFileSerializer(Serializer):
             "dateCreated": obj.file.timestamp,
             "data": obj.data or {},
         }
-        return d

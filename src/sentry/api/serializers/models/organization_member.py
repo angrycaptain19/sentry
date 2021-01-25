@@ -12,7 +12,11 @@ from sentry.models import OrganizationMember, OrganizationMemberTeam, Team, Team
 class OrganizationMemberSerializer(Serializer):
     def get_attrs(self, item_list, user):
         # TODO(dcramer): assert on relations
-        users = {d["id"]: d for d in serialize(set(i.user for i in item_list if i.user_id), user)}
+        users = {
+            d["id"]: d
+            for d in serialize({i.user for i in item_list if i.user_id}, user)
+        }
+
 
         return {
             item: {"user": users[six.text_type(item.user_id)] if item.user_id else None}
@@ -20,7 +24,7 @@ class OrganizationMemberSerializer(Serializer):
         }
 
     def serialize(self, obj, attrs, user):
-        d = {
+        return {
             "id": six.text_type(obj.id),
             "email": obj.get_email(),
             "name": obj.user.get_display_name() if obj.user else obj.get_email(),
@@ -37,7 +41,6 @@ class OrganizationMemberSerializer(Serializer):
             "inviteStatus": obj.get_invite_status_name(),
             "inviterName": obj.inviter.get_display_name() if obj.inviter else None,
         }
-        return d
 
 
 class OrganizationMemberWithTeamsSerializer(OrganizationMemberSerializer):

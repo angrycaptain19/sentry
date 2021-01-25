@@ -35,11 +35,12 @@ class OrganizationUserIssuesSearchEndpoint(OrganizationEndpoint, EnvironmentMixi
         if event_users:
             groups = Group.objects.filter(
                 id__in=tagstore.get_group_ids_for_users(
-                    project_ids=list(set([e.project_id for e in event_users])),
+                    project_ids=list({e.project_id for e in event_users}),
                     event_users=event_users,
                     limit=limit,
                 )
             ).order_by("-last_seen")[:limit]
+
         else:
             groups = []
 

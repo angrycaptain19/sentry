@@ -71,9 +71,10 @@ class GroupEventsEndpoint(GroupEndpoint, EnvironmentMixin):
             "group_ids": [group.id],
             "project_id": [group.project_id],
             "organization_id": group.project.organization_id,
-            "start": start if start else default_start,
-            "end": end if end else default_end,
+            "start": start or default_start,
+            "end": end or default_end,
         }
+
         direct_hit_resp = get_direct_hit_response(request, query, params, "api.group-events")
         if direct_hit_resp:
             return direct_hit_resp
@@ -109,7 +110,7 @@ class GroupEventsEndpoint(GroupEndpoint, EnvironmentMixin):
             tags = {}
 
         if environments:
-            env_names = set(env.name for env in environments)
+            env_names = {env.name for env in environments}
             if "environment" in tags:
                 # If a single environment was passed as part of the query, then
                 # we'll just search for that individual environment in this

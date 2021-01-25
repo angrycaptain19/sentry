@@ -24,7 +24,7 @@ class OrganizationUserIssuesEndpoint(OrganizationEndpoint, EnvironmentMixin):
                 "team_id", flat=True
             ),
         )
-        has_team_access = any([request.access.has_team_access(t) for t in teams])
+        has_team_access = any(request.access.has_team_access(t) for t in teams)
 
         if not has_team_access:
             return Response([])

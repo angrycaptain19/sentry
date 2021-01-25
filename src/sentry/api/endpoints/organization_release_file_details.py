@@ -58,10 +58,11 @@ class OrganizationReleaseFileDetailsEndpoint(OrganizationReleasesBaseEndpoint):
             raise ResourceDoesNotExist
 
         download_requested = request.GET.get("download") is not None
-        if download_requested and (request.access.has_scope("project:write")):
-            return self.download(releasefile)
-        elif download_requested:
-            return Response(status=403)
+        if download_requested:
+            if request.access.has_scope("project:write"):
+                return self.download(releasefile)
+            else:
+                return Response(status=403)
         return Response(serialize(releasefile, request.user))
 
     def put(self, request, organization, version, file_id):

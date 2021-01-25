@@ -23,7 +23,4 @@ class OriginField(serializers.CharField):
 
         bits = parse_uri_match(value)
         # ports are not supported on matching expressions (yet)
-        if ":" in bits.domain:
-            return False
-
-        return True
+        return ":" not in bits.domain

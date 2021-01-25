@@ -28,15 +28,10 @@ class ProjectTagsEndpoint(ProjectEndpoint, EnvironmentMixin):
                 key=lambda x: x.key,
             )
 
-        data = []
-        for tag_key in tag_keys:
-            data.append(
-                {
+        data = [{
                     "key": tagstore.get_standardized_key(tag_key.key),
                     "name": tagstore.get_tag_key_label(tag_key.key),
                     "uniqueValues": tag_key.values_seen,
                     "canDelete": tag_key.key not in PROTECTED_TAG_KEYS,
-                }
-            )
-
+                } for tag_key in tag_keys]
         return Response(data)

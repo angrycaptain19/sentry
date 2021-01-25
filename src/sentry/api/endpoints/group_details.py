@@ -181,11 +181,7 @@ class GroupDetailsEndpoint(GroupEndpoint, EnvironmentMixin):
 
             first_release = group.get_first_release()
 
-            if first_release is not None:
-                last_release = group.get_last_release()
-            else:
-                last_release = None
-
+            last_release = group.get_last_release() if first_release is not None else None
             action_list = self._get_actions(request, group)
 
             if first_release is not None and last_release is not None:

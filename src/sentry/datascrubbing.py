@@ -152,17 +152,16 @@ def _prefix_rule_references_in_rule(custom_rules, rule_def, prefix):
     if not isinstance(rule_def, dict):
         return rule_def
 
-    if rule_def.get("type") == "multiple" and rule_def.get("rules"):
-        rule_def = copy.deepcopy(rule_def)
-        rule_def["rules"] = list(
-            "{}{}".format(prefix, x) if x in custom_rules else x for x in rule_def["rules"]
-        )
-    elif (
-        rule_def.get("type") == "multiple"
-        and rule_def.get("rule")
-        and rule_def["rule"] in custom_rules
-    ):
-        rule_def = copy.deepcopy(rule_def)
-        rule_def["rule"] = "{}{}".format(prefix, rule_def["rule"])
+    if rule_def.get("type") == "multiple":
+        if rule_def.get("rules"):
+            rule_def = copy.deepcopy(rule_def)
+            rule_def["rules"] = [
+                "{}{}".format(prefix, x) if x in custom_rules else x
+                for x in rule_def["rules"]
+            ]
+
+        elif rule_def.get("rule") and rule_def["rule"] in custom_rules:
+            rule_def = copy.deepcopy(rule_def)
+            rule_def["rule"] = "{}{}".format(prefix, rule_def["rule"])
 
     return rule_def

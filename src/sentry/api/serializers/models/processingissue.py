@@ -9,13 +9,9 @@ from sentry.models import ProcessingIssue
 @register(ProcessingIssue)
 class ProcessingIssueSerializer(Serializer):
     def get_attrs(self, item_list, user):
-        counts = dict((i.id, getattr(i, "num_events", None)) for i in item_list)
+        counts = {i.id: getattr(i, "num_events", None) for i in item_list}
 
-        missing_counts = []
-        for pk, events in six.iteritems(counts):
-            if events is None:
-                missing_counts.append(pk)
-
+        missing_counts = [pk for pk, events in six.iteritems(counts) if events is None]
         if missing_counts:
             counts.update(
                 dict(
@@ -25,11 +21,7 @@ class ProcessingIssueSerializer(Serializer):
                 )
             )
 
-        result = {}
-        for item in item_list:
-            result[item] = {"num_events": counts.get(item.id) or 0}
-
-        return result
+        return {item: {"num_events": counts.get(item.id) or 0} for item in item_list}
 
     def serialize(self, obj, attrs, user):
         return {

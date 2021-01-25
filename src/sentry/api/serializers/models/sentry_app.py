@@ -29,9 +29,9 @@ class SentryAppSerializer(Serializer):
             "verifyInstall": obj.verify_install,
             "overview": obj.overview,
             "allowedOrigins": obj.application.get_allowed_origins(),
+            "featureData": [],
         }
 
-        data["featureData"] = []
 
         if obj.status != SentryAppStatus.INTERNAL:
             features = IntegrationFeature.objects.filter(sentry_app_id=obj.id)

@@ -386,10 +386,7 @@ class StatsMixin(object):
 
         try:
             end = request.GET.get("until")
-            if end:
-                end = to_datetime(float(end))
-            else:
-                end = datetime.utcnow().replace(tzinfo=utc)
+            end = to_datetime(float(end)) if end else datetime.utcnow().replace(tzinfo=utc)
         except ValueError:
             raise ParseError(detail="until must be a numeric timestamp.")
 

@@ -91,11 +91,7 @@ class EventSerializer(Serializer):
         # If we have meta, we need to get the tags in their original order
         # from the raw event body as the indexes need to line up with the
         # metadata indexes. In other cases we can use event.tags
-        if meta:
-            raw_tags = event.data.get("tags") or []
-        else:
-            raw_tags = event.tags
-
+        raw_tags = event.data.get("tags") or [] if meta else event.tags
         tags = sorted(
             [
                 {

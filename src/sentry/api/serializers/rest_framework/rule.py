@@ -97,11 +97,12 @@ class RuleSerializer(serializers.Serializer):
         for action in actions:
             # XXX(colleen): For ticket rules we need to ensure the user has
             # at least done minimal configuration
-            if action["id"] in TICKET_ACTIONS:
-                if not action.get("dynamic_form_fields"):
-                    raise serializers.ValidationError(
-                        {"actions": u"Must configure issue link settings."}
-                    )
+            if action["id"] in TICKET_ACTIONS and not action.get(
+                "dynamic_form_fields"
+            ):
+                raise serializers.ValidationError(
+                    {"actions": u"Must configure issue link settings."}
+                )
             # remove this attribute because we don't want it to be saved in the rule
             if action.pop("pending_save", None):
                 attrs["pending_save"] = True

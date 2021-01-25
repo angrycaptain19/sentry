@@ -80,23 +80,18 @@ class ProjectReleaseStatsEndpoint(ProjectEndpoint):
             environments=params.get("environment"),
         )
 
-        users_breakdown = []
-        for data in get_crash_free_breakdown(
-            project_id=params["project_id"][0],
-            release=version,
-            environments=params.get("environment"),
-            start=release.date_added,
-        ):
-            users_breakdown.append(
-                {
+        users_breakdown = [{
                     "date": data["date"],
                     "totalUsers": data["total_users"],
                     "crashFreeUsers": data["crash_free_users"],
                     "totalSessions": data["total_sessions"],
                     "crashFreeSessions": data["crash_free_sessions"],
-                }
-            )
-
+                } for data in get_crash_free_breakdown(
+            project_id=params["project_id"][0],
+            release=version,
+            environments=params.get("environment"),
+            start=release.date_added,
+        )]
         return Response(
             serialize({"stats": stats, "statTotals": totals, "usersBreakdown": users_breakdown}),
             status=200,
