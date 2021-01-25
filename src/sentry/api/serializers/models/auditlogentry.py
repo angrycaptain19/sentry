@@ -10,9 +10,8 @@ def fix(data):
     # There was a point in time where full Team objects
     # got serialized into our AuditLogEntry.data, so these
     # values need to be stripped and reduced down to integers
-    if data.get("teams"):
-        if hasattr(data["teams"][0], "id"):
-            data["teams"] = [t.id for t in data["teams"]]
+    if data.get("teams") and hasattr(data["teams"][0], "id"):
+        data["teams"] = [t.id for t in data["teams"]]
 
     return data
 
@@ -24,11 +23,14 @@ class AuditLogEntrySerializer(Serializer):
         users = {
             d["id"]: d
             for d in serialize(
-                set(i.actor for i in item_list if i.actor_id)
-                | set(i.target_user for i in item_list if i.target_user_id),
+                (
+                    {i.actor for i in item_list if i.actor_id}
+                    | {i.target_user for i in item_list if i.target_user_id}
+                ),
                 user,
             )
         }
+
 
         return {
             item: {

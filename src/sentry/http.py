@@ -107,7 +107,7 @@ def safe_urlopen(
         if method is None:
             method = "POST" if (data or json) else "GET"
 
-        response = session.request(
+        return session.request(
             method=method,
             url=url,
             allow_redirects=allow_redirects,
@@ -115,8 +115,6 @@ def safe_urlopen(
             verify=verify_ssl,
             **kwargs
         )
-
-        return response
 
 
 def safe_urlread(response):

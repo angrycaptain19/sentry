@@ -62,7 +62,7 @@ def translate(pat):
     res = ""
     while i < n:
         c = pat[i]
-        i = i + 1
+        i += 1
         # fnmatch.translate has no way to handle escaping metacharacters.
         # Applied this basic patch to handle it:
         # https://bugs.python.org/file27570/issue8402.1.patch
@@ -240,7 +240,7 @@ class SearchBoolean(namedtuple("SearchBoolean", "left_term operator right_term")
 
     @staticmethod
     def is_operator(value):
-        return value == SearchBoolean.BOOLEAN_AND or value == SearchBoolean.BOOLEAN_OR
+        return value in [SearchBoolean.BOOLEAN_AND, SearchBoolean.BOOLEAN_OR]
 
 
 class ParenExpression(namedtuple("ParenExpression", "children")):
@@ -356,8 +356,7 @@ class SearchVisitor(NodeVisitor):
             # Flatten each group in the list, since nodes can return multiple items
             for item in seq:
                 if isinstance(item, list):
-                    for sub in _flatten(item):
-                        yield sub
+                    yield from _flatten(item)
                 else:
                     yield item
 
@@ -564,22 +563,22 @@ class SearchVisitor(NodeVisitor):
 
     def visit_rel_time_filter(self, node, children):
         (search_key, _, value) = children
-        if search_key.name in self.date_keys:
-            try:
-                from_val, to_val = parse_datetime_range(value.text)
-            except InvalidQuery as exc:
-                raise InvalidSearchQuery(six.text_type(exc))
+        if search_key.name not in self.date_keys:
+            return self._handle_basic_filter(search_key, "=", SearchValue(value.text))
+
+        try:
+            from_val, to_val = parse_datetime_range(value.text)
+        except InvalidQuery as exc:
+            raise InvalidSearchQuery(six.text_type(exc))
 
             # TODO: Handle negations
-            if from_val is not None:
-                operator = ">="
-                search_value = from_val[0]
-            else:
-                operator = "<="
-                search_value = to_val[0]
-            return SearchFilter(search_key, operator, SearchValue(search_value))
+        if from_val is None:
+            operator = "<="
+            search_value = to_val[0]
         else:
-            return self._handle_basic_filter(search_key, "=", SearchValue(value.text))
+            operator = ">="
+            search_value = from_val[0]
+        return SearchFilter(search_key, operator, SearchValue(search_value))
 
     def visit_specific_time_filter(self, node, children):
         # If we specify a specific date, it means any event on that day, and if
@@ -782,8 +781,7 @@ def convert_aggregate_filter_to_snuba_query(aggregate_filter, params):
     if function.aggregate is not None:
         name = function.aggregate[-1]
 
-    condition = [name, aggregate_filter.operator, value]
-    return condition
+    return [name, aggregate_filter.operator, value]
 
 
 def convert_search_filter_to_snuba_query(search_filter, key=None, params=None):
@@ -1064,7 +1062,7 @@ def flatten_condition_tree(tree, condition_function):
     """
     stack = [tree]
     flattened = []
-    while len(stack) > 0:
+    while stack:
         item = stack.pop(0)
         if item[0] == condition_function:
             stack.extend(item[1])
@@ -1087,7 +1085,7 @@ def convert_snuba_condition_to_function(term, params=None):
     if isinstance(term, SearchFilter):
         conditions, project_to_filter, group_ids = format_search_filter(term, params)
         projects_to_filter = [project_to_filter] if project_to_filter else []
-        group_ids = group_ids if group_ids else []
+        group_ids = group_ids or []
         if conditions:
             conditions_to_and = []
             for cond in conditions:
@@ -2613,9 +2611,8 @@ def resolve_field_list(
     if PROJECT_NAME_ALIAS in fields:
         fields.remove(PROJECT_NAME_ALIAS)
         project_key = PROJECT_NAME_ALIAS
-    if project_key:
-        if "project.id" not in fields:
-            fields.append("project.id")
+    if project_key and "project.id" not in fields:
+        fields.append("project.id")
 
     for field in fields:
         if isinstance(field, six.string_types) and field.strip() == "":
@@ -2633,7 +2630,7 @@ def resolve_field_list(
                     aggregate_fields[function.aggregate[1]].add(field)
 
     # Only auto aggregate when there's one other so the group by is not unexpectedly changed
-    if auto_aggregations and snuba_filter.having and len(aggregations) > 0:
+    if auto_aggregations and snuba_filter.having and aggregations:
         for agg in snuba_filter.condition_aggregates:
             if agg not in snuba_filter.aliases:
                 function = resolve_field(agg, snuba_filter.params, functions_acl)
@@ -2692,7 +2689,7 @@ def resolve_field_list(
 
     orderby = snuba_filter.orderby
     # Only sort if there are columns. When there are only aggregates there's no need to sort
-    if orderby and len(columns) > 0:
+    if orderby and columns:
         orderby = resolve_orderby(orderby, columns, aggregations)
     else:
         orderby = None

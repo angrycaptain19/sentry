@@ -56,20 +56,29 @@ class RuleSerializer(Serializer):
             for o in obj.data.get("conditions", [])
         ]
 
-        d = {
+        return {
             # XXX(dcramer): we currently serialize unsaved rule objects
             # as part of the rule editor
             "id": six.text_type(obj.id) if obj.id else None,
             # conditions pertain to criteria that can trigger an alert
-            "conditions": filter(lambda condition: not _is_filter(condition), all_conditions),
+            "conditions": filter(
+                lambda condition: not _is_filter(condition), all_conditions
+            ),
             # filters are not new conditions but are the subset of conditions that pertain to event attributes
-            "filters": filter(lambda condition: _is_filter(condition), all_conditions),
+            "filters": filter(
+                lambda condition: _is_filter(condition), all_conditions
+            ),
             "actions": [
-                dict(list(o.items()) + [("name", _generate_rule_label(obj.project, obj, o))])
+                dict(
+                    list(o.items())
+                    + [("name", _generate_rule_label(obj.project, obj, o))]
+                )
                 for o in obj.data.get("actions", [])
             ],
-            "actionMatch": obj.data.get("action_match") or Rule.DEFAULT_CONDITION_MATCH,
-            "filterMatch": obj.data.get("filter_match") or Rule.DEFAULT_FILTER_MATCH,
+            "actionMatch": obj.data.get("action_match")
+            or Rule.DEFAULT_CONDITION_MATCH,
+            "filterMatch": obj.data.get("filter_match")
+            or Rule.DEFAULT_FILTER_MATCH,
             "frequency": obj.data.get("frequency") or Rule.DEFAULT_FREQUENCY,
             "name": obj.label,
             "dateCreated": obj.date_added,
@@ -77,4 +86,3 @@ class RuleSerializer(Serializer):
             "environment": environment.name if environment is not None else None,
             "projects": [obj.project.slug],
         }
-        return d

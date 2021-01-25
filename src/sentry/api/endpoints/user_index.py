@@ -23,7 +23,25 @@ class UserIndexEndpoint(Endpoint):
         if query:
             tokens = tokenize_query(query)
             for key, value in six.iteritems(tokens):
-                if key == "query":
+                if key == "email":
+                    queryset = queryset.filter(in_iexact("email", value))
+                elif key == "id":
+                    queryset = queryset.filter(
+                        id__in=[request.user.id if v == "me" else v for v in value]
+                    )
+                elif key == "is":
+                    for v in value:
+                        if v == "superuser":
+                            queryset = queryset.filter(is_superuser=True)
+                        else:
+                            queryset = queryset.none()
+                elif key == "name":
+                    queryset = queryset.filter(in_iexact("name", value))
+                elif key == "permission":
+                    queryset = queryset.filter(
+                        userpermission__permission__in=[v.lower() for v in value]
+                    )
+                elif key == "query":
                     value = " ".join(value)
                     queryset = queryset.filter(
                         Q(name__icontains=value)
@@ -31,26 +49,8 @@ class UserIndexEndpoint(Endpoint):
                         | Q(email__icontains=value)
                         | Q(emails__email__icontains=value)
                     )
-                elif key == "id":
-                    queryset = queryset.filter(
-                        id__in=[request.user.id if v == "me" else v for v in value]
-                    )
-                elif key == "name":
-                    queryset = queryset.filter(in_iexact("name", value))
-                elif key == "email":
-                    queryset = queryset.filter(in_iexact("email", value))
                 elif key == "username":
                     queryset = queryset.filter(in_iexact("username", value))
-                elif key == "is":
-                    for v in value:
-                        if v == "superuser":
-                            queryset = queryset.filter(is_superuser=True)
-                        else:
-                            queryset = queryset.none()
-                elif key == "permission":
-                    queryset = queryset.filter(
-                        userpermission__permission__in=[v.lower() for v in value]
-                    )
                 else:
                     queryset = queryset.none()
 

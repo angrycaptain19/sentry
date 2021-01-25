@@ -96,15 +96,15 @@ class UserNotificationDetailsEndpoint(UserEndpoint):
     def put(self, request, user):
         serializer = UserNotificationDetailsSerializer(data=request.data)
 
-        if serializer.is_valid():
-            for key in serializer.validated_data:
-                db_key = USER_OPTION_SETTINGS[key]["key"]
-                val = six.text_type(int(serializer.validated_data[key]))
-                (uo, created) = UserOption.objects.get_or_create(
-                    user=user, key=db_key, project=None, organization=None
-                )
-                uo.update(value=val)
-
-            return self.get(request, user)
-        else:
+        if not serializer.is_valid():
             return Response(serializer.errors, status=400)
+
+        for key in serializer.validated_data:
+            db_key = USER_OPTION_SETTINGS[key]["key"]
+            val = six.text_type(int(serializer.validated_data[key]))
+            (uo, created) = UserOption.objects.get_or_create(
+                user=user, key=db_key, project=None, organization=None
+            )
+            uo.update(value=val)
+
+        return self.get(request, user)

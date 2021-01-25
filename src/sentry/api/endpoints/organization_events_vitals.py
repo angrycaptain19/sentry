@@ -31,7 +31,7 @@ class OrganizationEventsVitalsEndpoint(OrganizationEventsV2EndpointBase):
                 return Response([])
 
             vitals = [vital.lower() for vital in request.GET.getlist("vital", [])]
-            if len(vitals) == 0:
+            if not vitals:
                 raise ParseError(detail=u"Need to pass at least one vital")
 
             selected_columns = []

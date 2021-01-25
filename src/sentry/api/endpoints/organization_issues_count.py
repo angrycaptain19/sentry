@@ -39,7 +39,7 @@ class OrganizationIssuesCountEndpoint(OrganizationEventsEndpointBase):
             assert "environment" not in extra_query_kwargs
             query_kwargs.update(extra_query_kwargs)
 
-        query_kwargs["environments"] = environments if environments else None
+        query_kwargs["environments"] = environments or None
 
         query_kwargs["max_hits"] = ISSUES_COUNT_MAX_HITS_LIMIT
 

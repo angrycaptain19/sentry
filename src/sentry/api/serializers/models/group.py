@@ -162,7 +162,7 @@ class GroupSerializerBase(Serializer):
             referrer="group.unhandled-flag",
         )
 
-        return dict((x["group_id"], {"unhandled": x["unhandled"]}) for x in rv["data"])
+        return {x["group_id"]: {"unhandled": x["unhandled"]} for x in rv["data"]}
 
     def _get_subscriptions(self, item_list, user):
         """
@@ -203,8 +203,10 @@ class GroupSerializerBase(Serializer):
                     itertools.chain.from_iterable(
                         map(
                             lambda project__groups: project__groups[1]
-                            if not options.get(project__groups[0].id, options.get(None))
-                            == UserOptionValue.no_conversations
+                            if options.get(
+                                project__groups[0].id, options.get(None)
+                            )
+                            != UserOptionValue.no_conversations
                             else [],
                             projects.items(),
                         )
@@ -213,6 +215,7 @@ class GroupSerializerBase(Serializer):
                 user=user,
             )
         }
+
 
         # This is the user's default value for any projects that don't have
         # the option value specifically recorded. (The default
@@ -378,9 +381,7 @@ class GroupSerializerBase(Serializer):
         for item in item_list:
             active_date = item.active_at or item.first_seen
 
-            annotations = []
-            annotations.extend(annotations_by_group_id[item.id])
-
+            annotations = list(annotations_by_group_id[item.id])
             # add the annotations for plugins
             # note that the model GroupMeta where all the information is stored is already cached at the top of this function
             # so these for loops doesn't make a bunch of queries
@@ -403,11 +404,7 @@ class GroupSerializerBase(Serializer):
                     resolution_type = "commit"
 
             ignore_item = ignore_items.get(item.id)
-            if ignore_item:
-                ignore_actor = actors.get(ignore_item.actor_id)
-            else:
-                ignore_actor = None
-
+            ignore_actor = actors.get(ignore_item.actor_id) if ignore_item else None
             result[item] = {
                 "id": item.id,
                 "assigned_to": resolved_assignees.get(item.id),

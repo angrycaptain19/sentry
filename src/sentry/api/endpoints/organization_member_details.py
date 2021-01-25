@@ -106,10 +106,7 @@ class OrganizationMemberDetailsEndpoint(OrganizationEndpoint):
             user__isnull=False,
             user__is_active=True,
         ).exclude(id=member.id)
-        if queryset.exists():
-            return False
-
-        return True
+        return not queryset.exists()
 
     def _serialize_member(self, member, request, allowed_roles=None):
         context = serialize(member, serializer=OrganizationMemberWithTeamsSerializer())
@@ -175,11 +172,10 @@ class OrganizationMemberDetailsEndpoint(OrganizationEndpoint):
                     return Response({"detail": ERR_RATE_LIMITED}, status=429)
 
                 if result.get("regenerate"):
-                    if request.access.has_scope("member:admin"):
-                        om.regenerate_token()
-                        om.save()
-                    else:
+                    if not request.access.has_scope("member:admin"):
                         return Response({"detail": ERR_INSUFFICIENT_SCOPE}, status=400)
+                    om.regenerate_token()
+                    om.save()
                 if om.token_expired:
                     return Response({"detail": ERR_EXPIRED}, status=400)
                 om.send_invite_email()

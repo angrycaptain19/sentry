@@ -55,9 +55,7 @@ class OrganizationAccessRequestDetailsEndpoint(OrganizationEndpoint):
             return True
         if request.access.has_team_scope(access_request.team, "team:admin"):
             return True
-        if request.access.has_team_scope(access_request.team, "team:write"):
-            return True
-        return False
+        return bool(request.access.has_team_scope(access_request.team, "team:write"))
 
     def get(self, request, organization):
         """

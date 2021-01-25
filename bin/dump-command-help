@@ -38,12 +38,18 @@ def write_page(out, data):
 
     args = [x["metavar"] for x in data["arguments"]]
     title = "`%s`" % " ".join(data["path"] + args)
-    body = [title, "-" * len(title), "", data["help"] or ""]
+    body = [
+        title,
+        "-" * len(title),
+        "",
+        data["help"] or "",
+        "",
+        "Options",
+        "```````",
+        "",
+    ]
 
-    body.append("")
-    body.append("Options")
-    body.append("```````")
-    body.append("")
+
     for opt in data["options"]:
         prefix = "- ``%s``: " % opt["opt_string"]
         for line in click.wrap_text(opt["help"], 74, prefix, "  ").splitlines() or [""]:

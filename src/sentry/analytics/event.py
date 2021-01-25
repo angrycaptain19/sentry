@@ -42,9 +42,11 @@ class Map(Attribute):
             return value
 
         if not isinstance(value, Mapping):
-            new_value = {}
-            for attr in self.attributes:
-                new_value[attr.name] = attr.extract(getattr(value, attr.name, None))
+            new_value = {
+                attr.name: attr.extract(getattr(value, attr.name, None))
+                for attr in self.attributes
+            }
+
             items = new_value
         else:
             # ensure we dont mutate the original
@@ -107,7 +109,9 @@ class Event(object):
 
     @classmethod
     def from_instance(cls, instance, **kwargs):
-        values = {}
-        for attr in cls.attributes:
-            values[attr.name] = kwargs.get(attr.name, getattr(instance, attr.name, None))
+        values = {
+            attr.name: kwargs.get(attr.name, getattr(instance, attr.name, None))
+            for attr in cls.attributes
+        }
+
         return cls(**values)

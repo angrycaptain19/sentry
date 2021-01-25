@@ -92,13 +92,19 @@ class ProjectSerializer(Serializer):
         for project in item_list:
             is_member = any(t.id in team_memberships for t in project_team_map.get(project.id, []))
             org_role = org_roles.get(project.organization_id)
-            if is_member:
-                has_access = True
-            elif is_superuser:
-                has_access = True
-            elif project.organization.flags.allow_joinleave:
-                has_access = True
-            elif org_role and roles.get(org_role).is_global:
+            if (
+                is_member
+                or not is_member
+                and is_superuser
+                or not is_member
+                and not is_superuser
+                and project.organization.flags.allow_joinleave
+                or not is_member
+                and not is_superuser
+                and not project.organization.flags.allow_joinleave
+                and org_role
+                and roles.get(org_role).is_global
+            ):
                 has_access = True
             else:
                 has_access = False
@@ -284,7 +290,7 @@ class ProjectSerializer(Serializer):
             "color": obj.color,
             "dateCreated": obj.date_added,
             "firstEvent": obj.first_event,
-            "firstTransactionEvent": True if obj.flags.has_transactions else False,
+            "firstTransactionEvent": bool(obj.flags.has_transactions),
             "features": attrs["features"],
             "status": status_label,
             "platform": obj.platform,
@@ -293,6 +299,7 @@ class ProjectSerializer(Serializer):
             "hasAccess": attrs["has_access"],
             "avatar": avatar,
         }
+
         if "stats" in attrs:
             context["stats"] = attrs["stats"]
         if "transactionStats" in attrs:
@@ -304,7 +311,11 @@ class ProjectWithOrganizationSerializer(ProjectSerializer):
     def get_attrs(self, item_list, user):
         attrs = super(ProjectWithOrganizationSerializer, self).get_attrs(item_list, user)
 
-        orgs = {d["id"]: d for d in serialize(list(set(i.organization for i in item_list)), user)}
+        orgs = {
+            d["id"]: d
+            for d in serialize(list({i.organization for i in item_list}), user)
+        }
+
         for item in item_list:
             attrs[item]["organization"] = orgs[six.text_type(item.organization_id)]
         return attrs
@@ -471,12 +482,13 @@ class ProjectSummarySerializer(ProjectWithTeamSerializer):
             "environments": attrs["environments"],
             "features": attrs["features"],
             "firstEvent": obj.first_event,
-            "firstTransactionEvent": True if obj.flags.has_transactions else False,
+            "firstTransactionEvent": bool(obj.flags.has_transactions),
             "platform": obj.platform,
             "platforms": attrs["platforms"],
             "latestRelease": attrs["latest_release"],
             "hasUserReports": attrs["has_user_reports"],
         }
+
         if not self._collapse(LATEST_DEPLOYS_KEY):
             context[LATEST_DEPLOYS_KEY] = attrs["deploys"]
         if "stats" in attrs:
@@ -589,16 +601,21 @@ class DetailedProjectSerializer(ProjectWithTeamSerializer):
             .values_list("id", "num_issues")
         )
 
-        processing_issues_by_project = {}
-        for project_id, num_issues in num_issues_projects:
-            processing_issues_by_project[project_id] = num_issues
+        processing_issues_by_project = {
+            project_id: num_issues
+            for project_id, num_issues in num_issues_projects
+        }
 
         queryset = ProjectOption.objects.filter(project__in=item_list, key__in=self.OPTION_KEYS)
         options_by_project = defaultdict(dict)
         for option in queryset.iterator():
             options_by_project[option.project_id][option.key] = option.value
 
-        orgs = {d["id"]: d for d in serialize(list(set(i.organization for i in item_list)), user)}
+        orgs = {
+            d["id"]: d
+            for d in serialize(list({i.organization for i in item_list}), user)
+        }
+
 
         latest_release_list = bulk_fetch_project_latest_releases(item_list)
         latest_releases = {
@@ -709,10 +726,11 @@ class SharedProjectSerializer(Serializer):
     def serialize(self, obj, attrs, user):
         from sentry import features
 
-        feature_list = []
-        for feature in ():
-            if features.has("projects:" + feature, obj, actor=user):
-                feature_list.append(feature)
+        feature_list = [
+            feature
+            for feature in ()
+            if features.has("projects:" + feature, obj, actor=user)
+        ]
 
         return {
             "slug": obj.slug,

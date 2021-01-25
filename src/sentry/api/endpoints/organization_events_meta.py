@@ -61,8 +61,8 @@ class OrganizationEventBaseline(OrganizationEventsEndpointBase):
                     referrer="api.transaction-baseline.get_value",
                 )
                 baseline_value = result["data"][0].get(baseline_alias) if "data" in result else None
-                if baseline_value is None:
-                    return Response(status=404)
+            if baseline_value is None:
+                return Response(status=404)
 
             delta_column = "absolute_delta(transaction.duration,{})".format(baseline_value)
 

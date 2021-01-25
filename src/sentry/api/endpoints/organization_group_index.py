@@ -58,7 +58,7 @@ class OrganizationGroupIndexEndpoint(OrganizationEventsEndpointBase):
             assert "environment" not in extra_query_kwargs
             query_kwargs.update(extra_query_kwargs)
 
-        query_kwargs["environments"] = environments if environments else None
+        query_kwargs["environments"] = environments or None
         result = search.query(**query_kwargs)
         return result, query_kwargs
 

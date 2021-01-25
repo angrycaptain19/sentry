@@ -24,15 +24,21 @@ class IncidentSerializer(Serializer):
 
         alert_rules = {
             d["id"]: d
-            for d in serialize(set(i.alert_rule for i in item_list if i.alert_rule.id), user)
+            for d in serialize(
+                {i.alert_rule for i in item_list if i.alert_rule.id}, user
+            )
         }
 
-        results = {}
-        for incident in item_list:
-            results[incident] = {"projects": incident_projects.get(incident.id, [])}
-            results[incident]["alert_rule"] = alert_rules.get(six.text_type(incident.alert_rule.id))
 
-        return results
+        return {
+            incident: {
+                "projects": incident_projects.get(incident.id, []),
+                "alert_rule": alert_rules.get(
+                    six.text_type(incident.alert_rule.id)
+                ),
+            }
+            for incident in item_list
+        }
 
     def serialize(self, obj, attrs, user):
         date_closed = obj.date_closed.replace(second=0, microsecond=0) if obj.date_closed else None

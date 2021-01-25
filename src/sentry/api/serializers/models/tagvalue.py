@@ -19,17 +19,10 @@ class UserTagValueSerializer(Serializer):
     def get_attrs(self, item_list, user):
         users = EventUser.for_tags(project_id=self.project_id, values=[t.value for t in item_list])
 
-        result = {}
-        for item in item_list:
-            result[item] = {"user": users.get(item.value)}
-        return result
+        return {item: {"user": users.get(item.value)} for item in item_list}
 
     def serialize(self, obj, attrs, user):
-        if not attrs["user"]:
-            result = {"id": None}
-        else:
-            result = serialize(attrs["user"], user)
-
+        result = {"id": None} if not attrs["user"] else serialize(attrs["user"], user)
         query = convert_user_tag_to_query("user", obj.value)
         if query:
             result["query"] = query

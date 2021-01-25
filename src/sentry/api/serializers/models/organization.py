@@ -105,10 +105,7 @@ class OrganizationSerializer(Serializer):
             a.organization_id: a
             for a in OrganizationAvatar.objects.filter(organization__in=item_list)
         }
-        data = {}
-        for item in item_list:
-            data[item] = {"avatar": avatars.get(item.id)}
-        return data
+        return {item: {"avatar": avatars.get(item.id)} for item in item_list}
 
     def serialize(self, obj, attrs, user):
         from sentry import features
@@ -192,10 +189,10 @@ class OnboardingTasksSerializer(Serializer):
         serialized_users = serialize(users, user, UserSerializer())
         user_map = {user["id"]: user for user in serialized_users}
 
-        data = {}
-        for item in item_list:
-            data[item] = {"user": user_map.get(six.text_type(item.user_id))}
-        return data
+        return {
+            item: {"user": user_map.get(six.text_type(item.user_id))}
+            for item in item_list
+        }
 
     def serialize(self, obj, attrs, user):
         return {

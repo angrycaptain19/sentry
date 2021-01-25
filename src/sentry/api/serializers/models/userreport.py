@@ -20,11 +20,10 @@ class UserReportSerializer(Serializer):
         else:
             event_users = {}
 
-        attrs = {}
-        for item in item_list:
-            attrs[item] = {"event_user": event_users.get(item.event_user_id)}
-
-        return attrs
+        return {
+            item: {"event_user": event_users.get(item.event_user_id)}
+            for item in item_list
+        }
 
     def serialize(self, obj, attrs, user):
         # TODO(dcramer): add in various context from the event
@@ -56,8 +55,11 @@ class UserReportWithGroupSerializer(UserReportSerializer):
         from sentry.api.serializers import GroupSerializer
 
         groups = list(
-            Group.objects.filter(id__in=set([i.group_id for i in item_list if i.group_id]))
+            Group.objects.filter(
+                id__in={i.group_id for i in item_list if i.group_id}
+            )
         )
+
         serialized_groups = {}
         if groups:
             serialized_groups = {

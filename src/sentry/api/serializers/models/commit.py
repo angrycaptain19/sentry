@@ -15,7 +15,7 @@ def get_users_for_commits(item_list, user=None):
     )
 
     if authors:
-        org_ids = set(item.organization_id for item in item_list)
+        org_ids = {item.organization_id for item in item_list}
         if len(org_ids) == 1:
             return get_users_for_authors(organization_id=org_ids.pop(), authors=authors, user=user)
     return {}
@@ -25,7 +25,7 @@ def get_users_for_commits(item_list, user=None):
 class CommitSerializer(Serializer):
     def __init__(self, exclude=None, include=None, *args, **kwargs):
         Serializer.__init__(self, *args, **kwargs)
-        self.exclude = frozenset(exclude if exclude else ())
+        self.exclude = frozenset(exclude or ())
 
     def get_attrs(self, item_list, user):
         if "author" not in self.exclude:
@@ -42,16 +42,17 @@ class CommitSerializer(Serializer):
 
         repository_objs = {repository["id"]: repository for repository in repositories}
 
-        result = {}
-        for item in item_list:
-            result[item] = {
-                "repository": repository_objs.get(six.text_type(item.repository_id), {}),
+        return {
+            item: {
+                "repository": repository_objs.get(
+                    six.text_type(item.repository_id), {}
+                ),
                 "user": users_by_author.get(six.text_type(item.author_id), {})
                 if item.author_id
                 else {},
             }
-
-        return result
+            for item in item_list
+        }
 
     def serialize(self, obj, attrs, user):
         d = {"id": obj.key, "message": obj.message, "dateCreated": obj.date_added}
@@ -66,7 +67,7 @@ class CommitSerializer(Serializer):
 class CommitWithReleaseSerializer(CommitSerializer):
     def __init__(self, exclude=None, include=None, *args, **kwargs):
         Serializer.__init__(self, *args, **kwargs)
-        self.exclude = frozenset(exclude if exclude else ())
+        self.exclude = frozenset(exclude or ())
 
     def get_attrs(self, item_list, user):
         from sentry.models import ReleaseCommit

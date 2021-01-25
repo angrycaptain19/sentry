@@ -47,7 +47,7 @@ class SchemaField(serializers.Field):
         if data is None:
             return
 
-        if data == "" or data == {}:
+        if data in ["", {}]:
             return {}
 
         try:
@@ -151,20 +151,19 @@ class SentryAppSerializer(Serializer):
         get_current_value = self.get_current_value_wrapper(attrs)
         # validate if webhookUrl is missing that we don't have any webhook features enabled
         if not get_current_value("webhookUrl"):
-            if get_current_value("isInternal"):
-                # for internal apps, make sure there aren't any events if webhookUrl is null
-                if get_current_value("events"):
-                    raise ValidationError(
-                        {"webhookUrl": "webhookUrl required if webhook events are enabled"}
-                    )
-                # also check that we don't have the alert rule enabled
-                if get_current_value("isAlertable"):
-                    raise ValidationError(
-                        {"webhookUrl": "webhookUrl required if alert rule action is enabled"}
-                    )
-            else:
+            if not get_current_value("isInternal"):
                 raise ValidationError({"webhookUrl": "webhookUrl required for public integrations"})
 
+            # for internal apps, make sure there aren't any events if webhookUrl is null
+            if get_current_value("events"):
+                raise ValidationError(
+                    {"webhookUrl": "webhookUrl required if webhook events are enabled"}
+                )
+            # also check that we don't have the alert rule enabled
+            if get_current_value("isAlertable"):
+                raise ValidationError(
+                    {"webhookUrl": "webhookUrl required if alert rule action is enabled"}
+                )
         # validate author for public integrations
         if not get_current_value("isInternal") and not get_current_value("author"):
             raise ValidationError({"author": "author required for public integrations"})

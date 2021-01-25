@@ -145,7 +145,7 @@ class BaseAccess(object):
         """
         Returns bool representing if a user should have access to every requested project
         """
-        return all([self.has_project_access(project) for project in projects])
+        return all(self.has_project_access(project) for project in projects)
 
     def has_project_membership(self, project):
         """

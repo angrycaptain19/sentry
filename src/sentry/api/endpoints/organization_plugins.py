@@ -34,15 +34,10 @@ class OrganizationPluginsEndpoint(OrganizationEndpoint):
             project__organization=organization,
         ).select_related("project")
 
-        resources = []
-
-        for project_option in enabled_plugins:
-            resources.append(
-                serialize(
+        resources = [serialize(
                     all_plugins[project_option.key.split(":")[0]],
                     request.user,
                     OrganizationPluginSerializer(project_option.project),
-                )
-            )
+                ) for project_option in enabled_plugins]
 
         return Response(resources)

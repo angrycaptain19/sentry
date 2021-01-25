@@ -464,7 +464,7 @@ def track_update_groups(function):
             context={"project": projects[0], "access": getattr(request, "access", None)},
         )
         results = dict(serializer.validated_data) if serializer.is_valid() else {}
-        tags = {key: True for key in results.keys()}
+        tags = {key: True for key in results}
         tags["status"] = response.status_code
         tags["detail"] = "group_index:track_update_groups:response"
         metrics.incr("group.update.http_response", sample_rate=1.0, tags=tags)

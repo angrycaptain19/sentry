@@ -60,6 +60,4 @@ class AvatarField(serializers.Field):
             return False
         if width < self.min_dimension:
             return False
-        if width > self.max_dimension:
-            return False
-        return True
+        return width <= self.max_dimension

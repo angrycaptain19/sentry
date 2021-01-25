@@ -13,10 +13,7 @@ MINIMUM = 80
 def is_translated(msg):
     if isinstance(msg.string, basestring):
         return bool(msg.string)
-    for item in msg.string:
-        if not item:
-            return False
-    return True
+    return all(msg.string)
 
 
 @click.command()

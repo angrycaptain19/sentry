@@ -101,7 +101,7 @@ class Superuser(object):
         if not allowed_ips:
             return True, None
         ip = ipaddress.ip_address(six.text_type(self.request.META["REMOTE_ADDR"]))
-        if not any(ip in addr for addr in allowed_ips):
+        if all(ip not in addr for addr in allowed_ips):
             return False, "invalid-ip"
         return True, None
 
@@ -208,16 +208,12 @@ class Superuser(object):
 
         request = self.request
         user = getattr(request, "user", None)
-        if not hasattr(request, "session"):
-            data = None
-        elif not (user and user.is_superuser):
-            data = None
-        else:
+        if hasattr(request, "session") and (user and user.is_superuser):
             data = self.get_session_data(current_datetime=current_datetime)
 
-        if not data:
-            self._set_logged_out()
         else:
+            data = None
+        if data:
             self._set_logged_in(expires=data["exp"], token=data["tok"], user=user)
 
             if not self.is_active:
@@ -237,6 +233,9 @@ class Superuser(object):
                             "user_id": request.user.id,
                         },
                     )
+
+        else:
+            self._set_logged_out()
 
     def _set_logged_in(self, expires, token, user, current_datetime=None):
         # we bind uid here, as if you change users in the same request

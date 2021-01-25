@@ -18,9 +18,7 @@ class UserPermission(SentryPermission):
             return True
         if request.auth:
             return False
-        if is_active_superuser(request):
-            return True
-        return False
+        return bool(is_active_superuser(request))
 
 
 class OrganizationUserPermission(UserPermission):

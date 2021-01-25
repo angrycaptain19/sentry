@@ -60,7 +60,12 @@ class OrganizationMemberUnreleasedCommitsEndpoint(OrganizationMemberEndpoint):
         results = list(queryset)
 
         if results:
-            repos = list(Repository.objects.filter(id__in=set([r.repository_id for r in results])))
+            repos = list(
+                Repository.objects.filter(
+                    id__in={r.repository_id for r in results}
+                )
+            )
+
         else:
             repos = []
 

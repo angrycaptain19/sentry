@@ -39,10 +39,7 @@ class AuthenticatorInterface(object):
     allow_multi_enrollment = False
 
     def __init__(self, authenticator=None):
-        if authenticator is None:
-            self.authenticator = None
-        else:
-            self.authenticator = authenticator
+        self.authenticator = None if authenticator is None else authenticator
 
     def is_enrolled(self):
         """Returns `True` if the interfaces is enrolled (eg: has an
