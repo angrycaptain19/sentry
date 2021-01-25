@@ -26,6 +26,7 @@ class ErrorRuleModal extends Form<Props, State> {
   }
 
   getCategoryOptions() {
+    // TODO(PRISCILA): Enable the disabled options below as soon as the backend supports
     return [
       [Category.RELEASES, t('Releases')],
       [Category.BROWSER_EXTENSIONS, t('Browser Extensions')],

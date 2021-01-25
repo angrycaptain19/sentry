@@ -14,6 +14,7 @@ import {Category} from './utils';
 type Condition = {
   category: Category;
   match: string;
+  legacyBrowsers?: Array<string>;
 };
 
 type Props = {
@@ -43,12 +44,12 @@ function ConditionFields({
         return (
           <Fields key={index}>
             <SelectField
-              label={displayDescription && t('Category')}
-              help={displayDescription && t('This is a description')}
+              label={displayDescription ? t('Category') : undefined}
+              help={displayDescription ? t('This is a description') : undefined}
               name="category"
-              choices={categoryOptions}
-              onChange={value => onChange(index, 'category', value)}
               value={category}
+              onChange={value => onChange(index, 'category', value)}
+              choices={categoryOptions}
               inline={false}
               hideControlState
               showHelpInTooltip
@@ -56,31 +57,34 @@ function ConditionFields({
               stacked
             />
             <TextField
-              label={displayDescription && t('Match Conditions')}
-              help={displayDescription && t('This is a description')}
+              label={displayDescription ? t('Match Conditions') : undefined}
+              help={displayDescription ? t('This is a description') : undefined}
               placeholder={
                 showLegacyBrowsers ? t('No match condition') : 'ex. 1* or [I3].[0-9].*'
               }
               name="match"
-              inline={false}
               value={match}
               onChange={value => onChange(index, 'match', value)}
               disabled={showLegacyBrowsers}
+              inline={false}
               hideControlState
               showHelpInTooltip
-              required
               stacked
             />
             <IconDeleteWrapper onClick={onDelete(index)}>
               <IconDelete aria-label={t('Delete Condition')} />
             </IconDeleteWrapper>
             {showLegacyBrowsers && (
-              <LegacyBrowsersField onToggle={() => {}} onToggleAll={() => {}} />
+              <LegacyBrowsersField
+                onChange={value => {
+                  onChange(index, 'legacyBrowsers', value);
+                }}
+              />
             )}
           </Fields>
         );
       })}
-      <StyledButton icon={<IconAdd isCircled />} onClick={onAdd}>
+      <StyledButton icon={<IconAdd isCircled />} onClick={onAdd} size="small">
         {t('Add Condition')}
       </StyledButton>
     </React.Fragment>
