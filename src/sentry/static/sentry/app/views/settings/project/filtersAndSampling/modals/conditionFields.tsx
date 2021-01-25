@@ -39,43 +39,45 @@ function ConditionFields({
     <React.Fragment>
       {conditions.map(({match, category}, index) => {
         const displayDescription = index === 0;
+        const showLegacyBrowsers = category === Category.LEGACY_BROWSERS;
         return (
-          <div key={index}>
-            <Fields>
-              <SelectField
-                label={displayDescription && t('Category')}
-                help={displayDescription && t('This is a description')}
-                name="category"
-                choices={categoryOptions}
-                onChange={value => onChange(index, 'category', value)}
-                value={category}
-                inline={false}
-                hideControlState
-                showHelpInTooltip
-                required
-                stacked
-              />
-              <TextField
-                label={displayDescription && t('Match Conditions')}
-                help={displayDescription && t('This is a description')}
-                placeholder="ex. 1* or [I3].[0-9].*"
-                name="match"
-                inline={false}
-                value={match}
-                onChange={value => onChange(index, 'match', value)}
-                hideControlState
-                showHelpInTooltip
-                required
-                stacked
-              />
-              <IconDeleteWrapper onClick={onDelete(index)}>
-                <IconDelete aria-label={t('Delete Condition')} />
-              </IconDeleteWrapper>
-            </Fields>
-            {category === Category.LEGACY_BROWSERS && (
+          <Fields key={index}>
+            <SelectField
+              label={displayDescription && t('Category')}
+              help={displayDescription && t('This is a description')}
+              name="category"
+              choices={categoryOptions}
+              onChange={value => onChange(index, 'category', value)}
+              value={category}
+              inline={false}
+              hideControlState
+              showHelpInTooltip
+              required
+              stacked
+            />
+            <TextField
+              label={displayDescription && t('Match Conditions')}
+              help={displayDescription && t('This is a description')}
+              placeholder={
+                showLegacyBrowsers ? t('No match condition') : 'ex. 1* or [I3].[0-9].*'
+              }
+              name="match"
+              inline={false}
+              value={match}
+              onChange={value => onChange(index, 'match', value)}
+              disabled={showLegacyBrowsers}
+              hideControlState
+              showHelpInTooltip
+              required
+              stacked
+            />
+            <IconDeleteWrapper onClick={onDelete(index)}>
+              <IconDelete aria-label={t('Delete Condition')} />
+            </IconDeleteWrapper>
+            {showLegacyBrowsers && (
               <LegacyBrowsersField onToggle={() => {}} onToggleAll={() => {}} />
             )}
-          </div>
+          </Fields>
         );
       })}
       <StyledButton icon={<IconAdd isCircled />} onClick={onAdd}>
